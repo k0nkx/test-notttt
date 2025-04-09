@@ -23,15 +23,6 @@ do
         return tween
     end
 
-    -- Calculate required width for text
-    local function GetTextWidth(text, font, size)
-        local textService = game:GetService("TextService")
-        local parameters = Font.fromEnum(font or Enum.Font.Ubuntu)
-        parameters.Size = size or 12
-        local bounds = textService:GetTextSize(text, size, font, Vector2.new(10000, 10000))
-        return bounds.X
-    end
-
     -- Notification functions
     function NotificationLibrary.Notifications:UpdatePositions()
         local i = 0
@@ -65,11 +56,7 @@ do
         -- Default values
         Time = Time or 3
         Color = Color or Color3.fromRGB(100, 95, 192)
-        Text = tostring(Text or "Notification")
-        
-        -- Calculate required width before creating elements
-        local textWidth = GetTextWidth(Text, Enum.Font.Ubuntu, 12)
-        local minWidth = math.max(textWidth + 24, 150) -- Minimum width of 150 or text width + padding
+        Text = Text or "Notification"
         
         -- Create notification table
         local Notification = {}
@@ -77,8 +64,8 @@ do
         -- Create holder frame
         local Holder = Instance.new("Frame")
         Holder.Name = "Holder"
-        Holder.Position = UDim2.new(0, -minWidth, 0, 75) -- Start offscreen
-        Holder.Size = UDim2.new(0, minWidth, 0, 23)
+        Holder.Position = UDim2.new(0, -30, 0, 75)
+        Holder.Size = UDim2.new(0, 0, 0, 23)
         Holder.BackgroundTransparency = 0
         Holder.BackgroundColor3 = Color3.fromRGB(37, 37, 37)
         Holder.BorderSizePixel = 0
@@ -112,7 +99,7 @@ do
         ProgressBar.BorderSizePixel = 0
         ProgressBar.Parent = Background
         
-        -- Create text label with text constraints
+        -- Create text label
         local TextLabel = Instance.new("TextLabel")
         TextLabel.Name = "TextLabel"
         TextLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -124,9 +111,11 @@ do
         TextLabel.TextSize = 12
         TextLabel.BackgroundTransparency = 1
         TextLabel.TextTransparency = 0
-        TextLabel.TextWrapped = false
-        TextLabel.TextTruncate = Enum.TextTruncate.AtEnd
         TextLabel.Parent = Background
+        
+        -- Wait for text bounds to calculate
+        TextLabel:GetPropertyChangedSignal("TextBounds"):Wait()
+        Holder.Size = UDim2.new(0, TextLabel.TextBounds.X + 16, 0, 19)
         
         -- Store references
         Notification.Holder = Holder
